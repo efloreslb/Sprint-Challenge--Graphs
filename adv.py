@@ -50,7 +50,7 @@ world = World()
 
 # You may uncomment the smaller graphs for development and testing purposes.
 # map_file = "maps/test_line.txt"
-# map_file = "maps/test_cross.txt"
+map_file = "maps/test_cross.txt"
 # map_file = "maps/test_loop.txt"
 # map_file = "maps/test_loop_fork.txt"
 # map_file = "maps/main_maze.txt"
@@ -76,6 +76,7 @@ oppositeDirections = {
 }
 gr = Graph()
 visited = set()
+test_path = Stack()
 
 # for room in world.rooms.values():
 #     gr.add_vertex(room)
@@ -88,44 +89,100 @@ visited = set()
 curr_room = player.current_room.id
 
 def explore(room):
+    print("--start--")
+    print(f'test_path: {test_path.stack}')
+
+    print(f'FINAL Traversal: {traversal_path}')
 
     if len(gr.vertices) == len(room_graph):
         return
 
+    if len(player.current_room.get_exits()) == 1:
+        # print(test_path.stack)
+        # print(oppositeDirections[test_path.stack[-1]])
+        # player.travel(oppositeDirections[test_path.stack[-1]])
+        # test_path.stack.pop()
+        # print(test_path.stack)
+        # explore(player.current_room.id)
+
+        print(f'only 1 exit - curr_room: {player.current_room.id}')
+        print(test_path.stack)
+        for x in range(0, test_path.size()):
+            print(x)
+            # print(f"traveled dir: {traveled_dir}")
+            # print(f'opposite: {oppositeDirections[traveled_dir]}')
+            # player.travel(oppositeDirections[traveled_dir])
+            player.travel(oppositeDirections[test_path.stack[-1]])
+            # counter += 1
+            test_path.pop()
+            # print(f'traveled back - stack: {test_path.stack}')
+
+        print(f'traveled back - curr_room: {player.current_room.id}')
+
     if player.current_room.id not in gr.vertices:
         gr.add_vertex(player.current_room.id)
+        print("adding to vertices")
         visited.add(player.current_room.id)
-        # print(gr.vertices[player.current_room.id])
-        # print(visited)
 
     for direction in gr.vertices[room]:
-        print(f'current room: {room}')
+        print(f'curr room: {room}')
         print(f'curr room vertices: {gr.vertices[room]}')
-        # print(gr.vertices)
-        print(f'visited set: {visited}')
-        print(direction)
-        if gr.vertices[player.current_room.id][direction] == "?":
-            player.travel(direction)
-            traversal_path.append(direction)
+        print(f'visited: {visited}')
+        # print(direction)
 
-            if player.current_room.id not in gr.vertices:
-                gr.add_vertex(player.current_room.id)
-                visited.add(player.current_room.id)
+        # random_direction = random.choice(['n','w','s','e'])
+        # while gr.vertices[player.current_room.id][random_direction] is not "?" and gr.vertices[player.current_room.id][random_direction] is not None:
+        #     random_direction = random.choice(['n','w','s','e'])
+        #     print(random_direction)
+        # print(f'decided direction: {random_direction}')
+        # direction = random_direction
+        
+        # direction = "s"
 
-            explored_room = player.current_room.id
-            explored_dir_opp = oppositeDirections[direction]
+        if gr.vertices[player.current_room.id][direction] != "?":
+            direction = random.choice(['n','w','s','e'])
 
-            gr.vertices[room][direction] = explored_room
-            gr.vertices[explored_room][explored_dir_opp] = room
+        if len(player.current_room.get_exits()) == 1:
+            for traveled_dir in test_path.stack:
+                player.travel(oppositeDirections[traveled_dir])
+                print(test_path.stack)
+                test_path.pop()
+                print(test_path.stack)
+        
+        player.travel(direction)
+        print(f'after travel: {player.current_room.id}')
+        traversal_path.append(direction)
+        test_path.push(direction)
 
+        if player.current_room.id not in gr.vertices:
+            gr.add_vertex(player.current_room.id)
+            visited.add(player.current_room.id)
+
+        explored_room = player.current_room.id
+        explored_dir_opp = oppositeDirections[direction]
+
+        gr.vertices[room][direction] = explored_room
+        gr.vertices[explored_room][explored_dir_opp] = room
+
+        # if len(player.current_room.get_exits()) == 1:
+        #     for traveled_dir in test_path.stack:
+        #         player.travel(oppositeDirections[traveled_dir])
+        #         test_path.pop()
+
+        print(f'Final Room: {player.current_room.id}')
+        # print(explored_room)
         room = explored_room
         
+        print(room)
+        print(test_path.stack)
+
+        print(gr.vertices)
+        print("--end--")
         explore(room)
 
 explore(curr_room)
-        
-
-print(traversal_path)
+print(f'FINAL Room: {player.current_room.id}')
+print(f'FINAL Traversal: {traversal_path}')
 
 # print(player.current_room.id)
 # player.travel('n')
